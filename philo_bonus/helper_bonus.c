@@ -6,12 +6,13 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/23 14:59:57 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/24 20:22:06 by yslami           ###   ########.fr       */
+/*   Updated: 2025/02/25 15:06:44 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 
+/*
 size_t	ft_strlen(char *s)
 {
 	size_t	len;
@@ -42,7 +43,7 @@ char	*ft_strdup(char *str)
 		res[j] = str[j];
 		j++;
 	}
-	res[j] = 0;
+	res[j] = '\0';
 	return (res);
 }
 
@@ -52,21 +53,85 @@ char	*ft_strjoin(char *s1, char *s2)
 	int		i;
 	int		j;
 
-	i = -1;
+	i = 0;
+	j = 0;
+	if (!s1 && !s2)
+		return (NULL);
+	if (!s2)
+		s2 =  ft_strdup("");
+	res = (char *)malloc((ft_strlen(s1) + ft_strlen(s2) + 1) * sizeof(char));
+	if (res == NULL)
+		return (free(s2), NULL);
+	while (s1[i])
+	{
+		res[i] = s1[i];
+		i++;
+	}
+	while (s2[j])
+		res[i++] = s2[j++];
+	res[i] = '\0';
+	return (free(s2), res);
+}
+*/
+
+size_t	ft_strlen(char *s)
+{
+	size_t	i;
+
+	i = 0;
+	while (s[i])
+		i++;
+	return (i);
+}
+
+char	*ft_strdup(char *s1)
+{
+	char	*cpy;
+	int		i;
+	int		j;
+
+	i = 0;
+	j = 0;
+	while (s1[i])
+		i++;
+	cpy = (char *)malloc((i + 1) * sizeof(char));
+	if (cpy == NULL)
+		return (NULL);
+	while (j < i)
+	{
+		cpy[j] = s1[j];
+		j++;
+	}
+	cpy[j] = '\0';
+	return (cpy);
+}
+
+char	*ft_strjoin(char *s1, char *s2)
+{
+	char	*newstring;
+	int		i;
+	int		j;
+	int		s1len;
+
+	i = 0;
 	j = 0;
 	if (!s1 && !s2)
 		return (NULL);
 	if (!s1)
 		return (free(s1), ft_strdup(s2));
-	res = (char *)malloc((ft_strlen(s1) + ft_strlen(s2) + 1) * sizeof(char));
-	if (res == NULL)
+	s1len = ft_strlen(s1);
+	newstring = (char *)malloc((s1len + ft_strlen(s2) + 1) * sizeof(char));
+	if (newstring == NULL)
 		return (free(s1), NULL);
-	while (s1[++i])
-		res[i] = s1[i];
+	while (s1[i])
+	{
+		newstring[i] = s1[i];
+		i++;
+	}
 	while (s2[j])
-		res[i++] = s2[j++];
-	res[i] = 0;
-	return (free(s1), res);
+		newstring[i++] = s2[j++];
+	newstring[i] = '\0';
+	return (free(s1), newstring);
 }
 
 time_t	get_time(void)
@@ -79,4 +144,12 @@ time_t	get_time(void)
 		return (-1);
 	}
 	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
+}
+
+void	print_logs(t_philo *philo, char *message)
+{
+	sem_wait(philo->simulation->log_sem);
+	printf("%ld %d %s\n", get_time() - philo->simulation->start_time, \
+		philo->id, message);
+	sem_post(philo->simulation->log_sem);
 }

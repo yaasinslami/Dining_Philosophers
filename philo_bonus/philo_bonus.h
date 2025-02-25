@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 20:29:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/24 18:38:10 by yslami           ###   ########.fr       */
+/*   Updated: 2025/02/25 15:00:38 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,17 @@
 # include <unistd.h>
 # include <pthread.h>
 # include <limits.h>
+#include <signal.h>
+#include <sys/time.h>
 
 # define MAX_PHILOS 200
-# define STOP 1
-# define EAT 2
-# define SLEEP 3
+# define STARVE 1
+# define ERROR 2
+# define STOP 3
 
 # define FORK_SEM "/fork_sem"
 # define LOG_SEM "/log_sem"
-# define DEAD_SEM "/dead_sem"
+# define STOP_SEM "/dead_sem"
 
 typedef struct s_philo
 {
@@ -39,7 +41,6 @@ typedef struct s_philo
 	int					id;
 	int					meals_eaten;
 	time_t				last_meal_time;
-	sem_t				*child_sem;
 	struct s_program	*simulation;
 }	t_philo;
 
@@ -50,30 +51,34 @@ typedef struct s_program
 	long				time_to_die;
 	long				time_to_eat;
 	long				time_to_sleep;
-	int					stop_flag;
-	int					dead_philo;
+	// int					dead_philo;
 	time_t				start_time;
-	time_t				death_time;
+	// time_t				death_time;
 	sem_t				*forks;
 	sem_t				*log_sem;
-	sem_t				*philo_dead;
+	sem_t				*stop_flag;
+	sem_t				*child_sem;
 	t_philo				*philos;
 }	t_program;
 
 // from mandatory
 int		parsing(int ac, char **av, t_program *simulation);
 int		start_simulation(t_program *simulation);
-
+void	*monitor(void *arg);
+void	*waiter(void *arg);
+void	take_forks(t_philo *philo);
+void	eat(t_philo *philo);
+void	ft_sleep(t_philo *philo);
+void	ft_hang(int time);
+void	kill_world(t_program **simulation);
 void	print_logs(t_philo *philo, char *str);
-void	alone_philo(t_philo *philo);
-void	philo_routine(t_philo *philo);
-void	unlock_mutexes(t_philo *philo, int state);
-int		check_number_of_eats(t_philo *philo);
-void	free_simulation(t_program *simulation);
 time_t	get_time(void);
 size_t	ft_strlen(char *s);
 char	*ft_strdup(char *str);
 char	*ft_strjoin(char *s1, char *s2);
 char	*ft_itoa(int num);
+
+int	wait_philos(t_program *simulation);
+// int find_philo_by_pid(t_program *simulation, pid_t pid);
 
 #endif
