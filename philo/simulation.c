@@ -1,0 +1,103 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   simulation.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/28 15:20:40 by yslami            #+#    #+#             */
+/*   Updated: 2025/02/22 17:59:34 by yslami           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "philo.h"
+
+static int	init_mutex(t_program *simulation);
+static void	*philosopher(void *data);
+static int	initialize_simulation(t_program *simulation);
+static void	initialize_philos(t_program *simulation);
+
+int	start_simulation(t_program *simulation)
+{
+	int	i;
+
+	if (initialize_simulation(simulation))
+		return (1);
+	i = -1;
+	while (++i < simulation->philos_num)
+	{
+		simulation->philos[i].last_meal_time = get_time();
+		if (pthread_create(&simulation->philos[i].thread, NULL, \
+			philosopher, &simulation->philos[i]))
+			return (printf("Error\nThread creation failed!\n"), 1);
+	}
+	i = -1;
+	while (++i < simulation->philos_num)
+	{
+		if (pthread_join(simulation->philos[i].thread, NULL))
+			return (printf("Error\nThread join failed!\n"), 1);
+	}
+	if (simulation->stop_flag == STOP)
+		printf("%ld %d died\n", simulation->death_time, simulation->dead_philo);
+	return (0);
+}
+
+static int	initialize_simulation(t_program *simulation)
+{
+	simulation->start_time = get_time();
+	simulation->philos = malloc(sizeof(t_philo) * simulation->philos_num);
+	simulation->forks = malloc(sizeof(pthread_mutex_t) * \
+		simulation->philos_num);
+	if (!simulation->philos || !simulation->forks)
+		return (printf("Error\nMalloc failed!\n"), 1);
+	simulation->stop_flag = 0;
+	simulation->dead_philo = 0;
+	initialize_philos(simulation);
+	if (init_mutex(simulation))
+		return (1);
+	return (0);
+}
+
+static void	initialize_philos(t_program *simulation)
+{
+	int	i;
+
+	i = -1;
+	while (++i < simulation->philos_num)
+	{
+		simulation->philos[i].id = i + 1;
+		simulation->philos[i].meals_eaten = 0;
+		simulation->philos[i].fork_r = i;
+		simulation->philos[i].fork_l = (i + 1) % simulation->philos_num;
+		simulation->philos[i].simulation = simulation;
+	}
+}
+
+static int	init_mutex(t_program *simulation)
+{
+	int	i;
+
+	i = -1;
+	while (++i < simulation->philos_num)
+	{
+		if (pthread_mutex_init(&simulation->forks[i], NULL))
+			return (printf("Error\nMutex init failed!\n"), 1);
+	}
+	if (pthread_mutex_init(&simulation->log_lock, NULL) || \
+		pthread_mutex_init(&simulation->meal_lock, NULL))
+		return (printf("Error\nMutex init failed!\n"), 1);
+	return (0);
+}
+
+static void	*philosopher(void *data)
+{
+	t_philo	*philo;
+
+	philo = (t_philo *)data;
+	if (philo->simulation->philos_num == 1)
+		return (alone_philo(philo), NULL);
+	if (philo->id % 2 == 0)
+		usleep(200);
+	philo_routine(philo);
+	return (NULL);
+}
