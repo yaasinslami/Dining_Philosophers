@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/30 19:36:42 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/22 18:13:32 by yslami           ###   ########.fr       */
+/*   Updated: 2025/02/26 20:36:24 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ void	philo_routine(t_philo *philo)
 static int	philo_hang(t_philo *philo, time_t time, int state)
 {
 	time_t	now_time;
+	int		should_stop;
 
 	now_time = get_time();
 	while (get_time() - now_time < time)
@@ -53,9 +54,10 @@ static int	philo_hang(t_philo *philo, time_t time, int state)
 				philo->simulation->start_time;
 			philo->simulation->stop_flag = STOP;
 		}
-		if (philo->simulation->stop_flag == STOP)
-			return (unlock_mutexes(philo, state), 1);
+		should_stop = philo->simulation->stop_flag;
 		pthread_mutex_unlock(&philo->simulation->meal_lock);
+		if (should_stop)
+			return (unlock_mutexes(philo, state), 1);
 		usleep(100);
 	}
 	return (0);

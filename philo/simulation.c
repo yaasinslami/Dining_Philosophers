@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/28 15:20:40 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/22 17:59:34 by yslami           ###   ########.fr       */
+/*   Updated: 2025/02/26 23:42:13 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,11 +45,19 @@ int	start_simulation(t_program *simulation)
 static int	initialize_simulation(t_program *simulation)
 {
 	simulation->start_time = get_time();
+	simulation->philos = NULL;
+	simulation->forks = NULL;
 	simulation->philos = malloc(sizeof(t_philo) * simulation->philos_num);
+	if (!simulation->philos)
+		return (printf("Error\nMalloc failed!\n"), 1);
 	simulation->forks = malloc(sizeof(pthread_mutex_t) * \
 		simulation->philos_num);
-	if (!simulation->philos || !simulation->forks)
+	if (!simulation->forks)
+	{
+		free(simulation->philos);
+		simulation->philos = NULL;
 		return (printf("Error\nMalloc failed!\n"), 1);
+	}
 	simulation->stop_flag = 0;
 	simulation->dead_philo = 0;
 	initialize_philos(simulation);

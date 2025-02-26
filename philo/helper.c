@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:28:18 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/22 18:11:45 by yslami           ###   ########.fr       */
+/*   Updated: 2025/02/26 23:38:17 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,22 @@
 
 void	print_logs(t_philo *philo, char *str)
 {
+	int should_continue;
+
 	pthread_mutex_lock(&philo->simulation->log_lock);
-	if (!philo->simulation->stop_flag)
+	pthread_mutex_lock(&philo->simulation->meal_lock);
+	should_continue = philo->simulation->stop_flag != STOP;
+	pthread_mutex_unlock(&philo->simulation->meal_lock);
+	if (should_continue)
+	{
 		printf("%ld %d %s\n", get_time() - philo->simulation->start_time, \
 			philo->id, str);
+	}
 	pthread_mutex_unlock(&philo->simulation->log_lock);
 }
 
 void	unlock_mutexes(t_philo *philo, int state)
 {
-	pthread_mutex_unlock(&philo->simulation->meal_lock);
 	if (state == EAT)
 	{
 		pthread_mutex_unlock(&philo->simulation->forks[philo->fork_l]);
@@ -35,13 +41,15 @@ void	free_simulation(t_program *simulation)
 {
 	int	i;
 
+	if (!simulation)
+		return ;
 	i = -1;
-	while (++i < simulation->philos_num)
+	while (simulation->forks && ++i < simulation->philos_num)
 		pthread_mutex_destroy(&simulation->forks[i]);
-	if (simulation->forks)
-		free(simulation->forks);
 	pthread_mutex_destroy(&simulation->meal_lock);
 	pthread_mutex_destroy(&simulation->log_lock);
+	if (simulation->forks)
+		free(simulation->forks);
 	if (simulation->philos)
 		free(simulation->philos);
 }

@@ -12,7 +12,7 @@ OBJS		=	$(SRCS:%.c=$(OBJDIR)/%.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+	@$(CC) $(FLAGS) $(OBJS) -o $(NAME)
 	@echo "$(GREEN)$(NAME) compiled$(DEF_COLOR)"
 
 $(OBJDIR)/%.o : %.c $(HEADER)
@@ -35,3 +35,5 @@ re: fclean all
 DEF_COLOR       :=      \033[0;39m
 GRAY            :=      \033[0;90m
 GREEN           :=      \033[0;92m
+
+# -fsanitize=thread
