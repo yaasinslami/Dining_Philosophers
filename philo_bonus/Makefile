@@ -1,19 +1,26 @@
 CC 			= 	cc
 NAME		=	philo_bonus
-FLAGS		= 	-g -Wall -Wextra -Werror
+FLAGS		= 	-Wall -Wextra -Werror
 HEADER		=	philo_bonus.h
 RM			=	rm -rf
 MD			=	mkdir -p
 
 OBJDIR		= 	obj_bonus
-SRCS		= 	helper2_bonus.c helper_bonus.c parser_bonus.c philo_bonus.c simulation2_bonus.c simulation_bonus.c
+SRCS		= 	helper2_bonus.c \
+				helper_bonus.c \
+				parser_bonus.c \
+				philo_bonus.c \
+				simulation2_bonus.c \
+				simulation_bonus.c \
+				clean_bonus.c
+
 OBJS		=	$(SRCS:%.c=$(OBJDIR)/%.o)
 
 all: $(NAME)
 bonus: all
 
 $(NAME): $(OBJS)
-	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+	@$(CC) $(FLAGS) $(OBJS) -o $(NAME)
 	@echo "$(GREEN)$(NAME) compiled$(DEF_COLOR)"
 
 $(OBJDIR)/%.o : %.c $(HEADER)

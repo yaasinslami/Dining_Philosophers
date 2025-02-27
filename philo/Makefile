@@ -1,6 +1,6 @@
 CC 			= 	cc
 NAME		=	philo
-FLAGS		= 	-Wall -Wextra -Werror
+FLAGS		=	-Wall -Wextra -Werror
 HEADER		=	philo.h
 RM			=	rm -rf
 MD			=	mkdir -p
@@ -35,5 +35,3 @@ re: fclean all
 DEF_COLOR       :=      \033[0;39m
 GRAY            :=      \033[0;90m
 GREEN           :=      \033[0;92m
-
-# -fsanitize=thread

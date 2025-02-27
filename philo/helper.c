@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:28:18 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/26 23:38:17 by yslami           ###   ########.fr       */
+/*   Updated: 2025/02/27 11:06:34 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	print_logs(t_philo *philo, char *str)
 {
-	int should_continue;
+	int	should_continue;
 
 	pthread_mutex_lock(&philo->simulation->log_lock);
 	pthread_mutex_lock(&philo->simulation->meal_lock);

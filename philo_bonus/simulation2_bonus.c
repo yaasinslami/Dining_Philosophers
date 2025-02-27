@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/25 09:53:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/25 17:09:47 by yslami           ###   ########.fr       */
+/*   Updated: 2025/02/26 11:28:51 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,13 @@ void	*monitor(void *arg)
 	philo = (t_philo *)arg;
 	while (1)
 	{
+		usleep(200);
 		sem_wait(philo->simulation->child_sem);
 		time_without_eat = get_time() - philo->last_meal_time;
 		if (time_without_eat > philo->simulation->time_to_die && \
 			philo->meals_eaten != philo->simulation->number_of_eats)
-		{
-			print_logs(philo, "died");
-			sem_post(philo->simulation->stop_flag);
-			// return (exit(1), NULL);
-				// exit(1);
-		}
+			exit(1);
 		sem_post(philo->simulation->child_sem);
-		// usleep(300);
 	}
 	return (NULL);
 }
@@ -45,11 +40,10 @@ void	*waiter(void *arg)
 	{
 		take_forks(philo);
 		eat(philo);
-		// sem_wait(philo->simulation->child_sem);
-		// if (philo->meals_eaten == philo->simulation->number_of_eats)
-		// 	sem_post(philo->simulation->stop_flag);
-			// exit(STOP);
-		// sem_post(philo->simulation->child_sem);
+		sem_wait(philo->simulation->child_sem);
+		if (philo->meals_eaten == philo->simulation->number_of_eats)
+			exit(0);
+		sem_post(philo->simulation->child_sem);
 		ft_sleep(philo);
 		print_logs(philo, "is thinking");
 	}
