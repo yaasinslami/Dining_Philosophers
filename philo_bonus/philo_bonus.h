@@ -6,13 +6,15 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 20:29:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/26 11:42:52 by yslami           ###   ########.fr       */
+/*   Updated: 2025/03/01 16:33:42 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PHILO_BONUS_H
 # define PHILO_BONUS_H
 
+#include <sys/wait.h>
+# include <sys/types.h>
 # include <stdlib.h>
 # include <semaphore.h>
 # include <stdio.h>

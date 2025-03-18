@@ -1,6 +1,6 @@
 CC 			= 	cc
 NAME		=	philo
-FLAGS		=	-Wall -Wextra -Werror
+FLAGS		=	-Wall -Wextra -Werror -g -fsanitize=thread
 HEADER		=	philo.h
 RM			=	rm -rf
 MD			=	mkdir -p
@@ -12,12 +12,12 @@ OBJS		=	$(SRCS:%.c=$(OBJDIR)/%.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@$(CC) $(FLAGS) $(OBJS) -o $(NAME)
+	$(CC) $(FLAGS) $(OBJS) -o $(NAME) -lpthread
 	@echo "$(GREEN)$(NAME) compiled$(DEF_COLOR)"
 
 $(OBJDIR)/%.o : %.c $(HEADER)
 	@$(MD) $(OBJDIR)
-	@$(CC) $(FLAGS) -c $< -o $@
+	$(CC) $(FLAGS) -c $< -o $@
 
 clean:
 	@$(RM) $(OBJDIR)
