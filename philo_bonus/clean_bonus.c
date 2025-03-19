@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 11:16:09 by yslami            #+#    #+#             */
-/*   Updated: 2025/03/01 16:49:26 by yslami           ###   ########.fr       */
+/*   Updated: 2025/03/18 16:13:28 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,9 @@ int	wait_philos(t_program *simulation)
 			kill_world(&simulation);
 			return (0);
 		}
-		// if (i == simulation->philos_num)
-		// 	i = 0;
-		// i++;
+		if (i == simulation->philos_num)
+			i = 0;
+		i++;
 	}
 	kill_world(&simulation);
 	return (1);
@@ -46,6 +46,8 @@ void	kill_world(t_program **simulation)
 	i = 0;
 	while (i < (*simulation)->philos_num)
 	{
+		if (!(*simulation)->philos)
+			break ;
 		if ((*simulation)->philos[i].philo_pid > 0)
 			kill((*simulation)->philos[i++].philo_pid, SIGKILL);
 	}

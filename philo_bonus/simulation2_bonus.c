@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/25 09:53:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/26 11:28:51 by yslami           ###   ########.fr       */
+/*   Updated: 2025/03/18 14:41:52 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,10 @@ void	*monitor(void *arg)
 		time_without_eat = get_time() - philo->last_meal_time;
 		if (time_without_eat > philo->simulation->time_to_die && \
 			philo->meals_eaten != philo->simulation->number_of_eats)
+		{
+			sem_post(philo->simulation->child_sem);
 			exit(1);
+		}
 		sem_post(philo->simulation->child_sem);
 	}
 	return (NULL);
@@ -39,10 +42,13 @@ void	*waiter(void *arg)
 	while (1)
 	{
 		take_forks(philo);
-		eat(philo);
 		sem_wait(philo->simulation->child_sem);
+		eat(philo);
 		if (philo->meals_eaten == philo->simulation->number_of_eats)
+		{
+			sem_post(philo->simulation->child_sem);
 			exit(0);
+		}
 		sem_post(philo->simulation->child_sem);
 		ft_sleep(philo);
 		print_logs(philo, "is thinking");

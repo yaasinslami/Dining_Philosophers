@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/30 19:36:42 by yslami            #+#    #+#             */
-/*   Updated: 2025/03/18 05:47:07 by yslami           ###   ########.fr       */
+/*   Updated: 2025/03/18 06:32:36 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ static int	philo_hang(t_philo *philo, time_t time, int state)
 		pthread_mutex_unlock(&philo->simulation->meal_lock);
 		if (should_stop)
 			return (unlock_mutexes(philo, state), 1);
-		usleep(100);
 	}
 	return (0);
 }

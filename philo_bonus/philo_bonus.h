@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 20:29:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/03/01 16:33:42 by yslami           ###   ########.fr       */
+/*   Updated: 2025/03/18 16:50:56 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ typedef struct s_program
 	sem_t				*forks;
 	sem_t				*log_sem;
 	sem_t				*child_sem;
+	sem_t				*ready_sem;
+	sem_t				*start_sem;
 	t_philo				*philos;
 }	t_program;
 
