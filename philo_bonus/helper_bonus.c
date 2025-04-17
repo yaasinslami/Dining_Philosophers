@@ -6,13 +6,13 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/23 14:59:57 by yslami            #+#    #+#             */
-/*   Updated: 2025/03/18 14:42:25 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/14 17:42:10 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 
-size_t	ft_strlen(char *s)
+static size_t	ft_strlen(char *s)
 {
 	size_t	len;
 
@@ -24,7 +24,7 @@ size_t	ft_strlen(char *s)
 	return (len);
 }
 
-char	*ft_strdup(char *str)
+static char	*ft_strdup(char *str)
 {
 	char	*res;
 	int		i;
@@ -84,10 +84,11 @@ time_t	get_time(void)
 	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
-void	print_logs(t_philo *philo, char *message)
+void	print_logs(t_philo *philo, char *message, int id)
 {
 	sem_wait(philo->simulation->log_sem);
 	printf("%ld %d %s\n", get_time() - philo->simulation->start_time, \
 		philo->id, message);
-	sem_post(philo->simulation->log_sem);
+	if (id == 0)
+		sem_post(philo->simulation->log_sem);
 }

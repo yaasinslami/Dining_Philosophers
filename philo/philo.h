@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:19:59 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/27 10:50:53 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/17 11:53:17 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,10 @@
 # define STOP 1
 # define EAT 2
 # define SLEEP 3
+
+# define FORKS 1
+# define LOG 2
+# define MEAL 4
 
 typedef struct s_philo
 {
@@ -50,6 +54,7 @@ typedef struct s_program
 	pthread_mutex_t		*forks;
 	pthread_mutex_t		log_lock;
 	pthread_mutex_t		meal_lock;
+	int					mut;
 	t_philo				*philos;
 }	t_program;
 

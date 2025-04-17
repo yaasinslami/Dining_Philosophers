@@ -1,6 +1,6 @@
 CC 			= 	cc
 NAME		=	philo
-FLAGS		=	-Wall -Wextra -Werror -g -fsanitize=thread
+FLAGS		=	-Wall -Wextra -Werror
 HEADER		=	philo.h
 RM			=	rm -rf
 MD			=	mkdir -p
@@ -12,7 +12,7 @@ OBJS		=	$(SRCS:%.c=$(OBJDIR)/%.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(FLAGS) $(OBJS) -o $(NAME) -lpthread
+	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
 	@echo "$(GREEN)$(NAME) compiled$(DEF_COLOR)"
 
 $(OBJDIR)/%.o : %.c $(HEADER)
@@ -20,18 +20,11 @@ $(OBJDIR)/%.o : %.c $(HEADER)
 	$(CC) $(FLAGS) -c $< -o $@
 
 clean:
-	@$(RM) $(OBJDIR)
-	@echo "$(GRAY)$(NAME) object files removed$(DEF_COLOR)"
+	$(RM) $(OBJDIR)
 
 fclean: clean
-	@$(RM) $(NAME)
-	@echo "$(GRAY)$(NAME) removed$(DEF_COLOR)"
+	$(RM) $(NAME)
 
 re: fclean all
 
 .PHONY: all clean fclean re
-
-# Colors
-DEF_COLOR       :=      \033[0;39m
-GRAY            :=      \033[0;90m
-GREEN           :=      \033[0;92m

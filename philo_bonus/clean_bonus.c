@@ -6,35 +6,36 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 11:16:09 by yslami            #+#    #+#             */
-/*   Updated: 2025/03/18 16:13:28 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/17 13:34:38 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 
-int	wait_philos(t_program *simulation)
+void	wait_philos(t_program *simulation)
 {
-	int	status;
-	int	i;
+	int		status;
+	pid_t	pid;
+	int		i;
+	int		exit_code;
 
 	i = 0;
-	while (waitpid(0, &status, 0) != -1)
+	while (i < simulation->philos_num)
 	{
-		if (WIFSIGNALED(status))
-			return (kill_world(&simulation), 0);
-		if (status != 0)
+		pid = waitpid(-1, &status, 0);
+		if (pid == -1)
+			break ;
+		if (WIFEXITED(status))
 		{
-			print_logs(simulation->philos, "died");
-			// printf("pid of died child = %d\n", simulation->philos[i].philo_pid);
-			kill_world(&simulation);
-			return (0);
+			exit_code = WEXITSTATUS(status);
+			if (exit_code != 0)
+				kill_world(&simulation);
 		}
 		if (i == simulation->philos_num)
 			i = 0;
 		i++;
 	}
 	kill_world(&simulation);
-	return (1);
 }
 
 void	kill_world(t_program **simulation)
@@ -46,10 +47,9 @@ void	kill_world(t_program **simulation)
 	i = 0;
 	while (i < (*simulation)->philos_num)
 	{
-		if (!(*simulation)->philos)
-			break ;
 		if ((*simulation)->philos[i].philo_pid > 0)
-			kill((*simulation)->philos[i++].philo_pid, SIGKILL);
+			kill((*simulation)->philos[i].philo_pid, SIGKILL);
+		i++;
 	}
 	sem_unlink(FORK_SEM);
 	sem_unlink(LOG_SEM);
@@ -58,5 +58,5 @@ void	kill_world(t_program **simulation)
 	if ((*simulation)->philos)
 		free((*simulation)->philos);
 	free(*simulation);
-	exit(0);
+	exit (0);
 }

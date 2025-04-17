@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 16:43:30 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/23 11:56:14 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/16 11:40:19 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ int	parsing(int ac, char **av, t_program *simulation)
 
 	if (ac != 5 && ac != 6)
 		return (printf("Error\nInvalid arguments!\n"), 1);
-	i = 0;
 	simulation->number_of_eats = -1;
+	i = 0;
 	while (++i < ac)
 	{
 		num = ft_atoi(av[i]);

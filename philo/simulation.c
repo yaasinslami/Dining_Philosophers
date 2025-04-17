@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/28 15:20:40 by yslami            #+#    #+#             */
-/*   Updated: 2025/03/18 06:14:06 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/17 11:42:04 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,11 @@ int	start_simulation(t_program *simulation)
 		simulation->philos[i].last_meal_time = get_time();
 		if (pthread_create(&simulation->philos[i].thread, NULL, \
 			philosopher, &simulation->philos[i]))
+		{
+			while (--i >= 0)
+				pthread_join(simulation->philos[i].thread, NULL);
 			return (printf("Error\nThread creation failed!\n"), 1);
+		}
 	}
 	i = -1;
 	while (++i < simulation->philos_num)
@@ -44,6 +48,7 @@ int	start_simulation(t_program *simulation)
 
 static int	initialize_simulation(t_program *simulation)
 {
+	simulation->mut = 0;
 	simulation->start_time = get_time();
 	simulation->philos = NULL;
 	simulation->forks = NULL;
@@ -89,11 +94,19 @@ static int	init_mutex(t_program *simulation)
 	while (++i < simulation->philos_num)
 	{
 		if (pthread_mutex_init(&simulation->forks[i], NULL))
+		{
+			while (--i < 0)
+				pthread_mutex_destroy(&simulation->forks[i]);
 			return (printf("Error\nMutex init failed!\n"), 1);
+		}
 	}
-	if (pthread_mutex_init(&simulation->log_lock, NULL) || \
-		pthread_mutex_init(&simulation->meal_lock, NULL))
+	simulation->mut |= FORKS;
+	if (pthread_mutex_init(&simulation->log_lock, NULL))
 		return (printf("Error\nMutex init failed!\n"), 1);
+	simulation->mut |= LOG;
+	if (pthread_mutex_init(&simulation->meal_lock, NULL))
+		return (printf("Error\nMutex init failed!\n"), 1);
+	simulation->mut |= MEAL;
 	return (0);
 }
 

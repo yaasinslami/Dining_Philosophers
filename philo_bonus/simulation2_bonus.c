@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/25 09:53:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/03/18 14:41:52 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/16 13:31:48 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,61 +15,41 @@
 void	*monitor(void *arg)
 {
 	t_philo	*philo;
-	time_t	time_without_eat;
+	int		check;
 
 	philo = (t_philo *)arg;
 	while (1)
 	{
-		usleep(200);
 		sem_wait(philo->simulation->child_sem);
-		time_without_eat = get_time() - philo->last_meal_time;
-		if (time_without_eat > philo->simulation->time_to_die && \
-			philo->meals_eaten != philo->simulation->number_of_eats)
+		check = get_time() - philo->next_meal;
+		sem_post(philo->simulation->child_sem);
+		if (check > 0)
 		{
-			sem_post(philo->simulation->child_sem);
+			print_logs(philo, "died", 1);
 			exit(1);
 		}
-		sem_post(philo->simulation->child_sem);
 	}
 	return (NULL);
-}
-
-void	*waiter(void *arg)
-{
-	t_philo	*philo;
-
-	philo = (t_philo *)arg;
-	while (1)
-	{
-		take_forks(philo);
-		sem_wait(philo->simulation->child_sem);
-		eat(philo);
-		if (philo->meals_eaten == philo->simulation->number_of_eats)
-		{
-			sem_post(philo->simulation->child_sem);
-			exit(0);
-		}
-		sem_post(philo->simulation->child_sem);
-		ft_sleep(philo);
-		print_logs(philo, "is thinking");
-	}
 }
 
 void	take_forks(t_philo *philo)
 {
 	sem_wait(philo->simulation->forks);
-	print_logs(philo, "has taken a fork");
+	print_logs(philo, "has taken a fork", 0);
 	sem_wait(philo->simulation->forks);
-	print_logs(philo, "has taken a fork");
+	print_logs(philo, "has taken a fork", 0);
 }
 
 void	eat(t_philo *philo)
 {
-	print_logs(philo, "is eating");
-	ft_hang(philo->simulation->time_to_eat);
+	print_logs(philo, "is eating", 0);
+	if (philo->simulation->number_of_eats != -1)
+		philo->meals_eaten++;
+	usleep(philo->simulation->time_to_eat * 1000);
 	sem_wait(philo->simulation->child_sem);
 	philo->last_meal_time = get_time();
-	philo->meals_eaten++;
+	philo->next_meal = philo->last_meal_time + \
+		philo->simulation->time_to_die;
 	sem_post(philo->simulation->child_sem);
 	sem_post(philo->simulation->forks);
 	sem_post(philo->simulation->forks);
@@ -77,6 +57,14 @@ void	eat(t_philo *philo)
 
 void	ft_sleep(t_philo *philo)
 {
-	print_logs(philo, "is sleeping");
-	ft_hang(philo->simulation->time_to_sleep);
+	print_logs(philo, "is sleeping", 0);
+	usleep(philo->simulation->time_to_sleep * 1000);
+}
+
+int	check_number_of_eats(t_philo *philo)
+{
+	if (philo->simulation->number_of_eats != -1 && \
+		philo->meals_eaten >= philo->simulation->number_of_eats)
+		return (1);
+	return (0);
 }

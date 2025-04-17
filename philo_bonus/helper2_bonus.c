@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/24 18:04:06 by yslami            #+#    #+#             */
-/*   Updated: 2025/02/26 11:16:42 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/14 17:16:29 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,11 +70,18 @@ char	*ft_itoa(int num)
 	return (res);
 }
 
-void	ft_hang(int time)
+int	child_sem(t_philo *philo)
 {
-	time_t	start;
+	char	*waiter_sem;
 
-	start = get_time();
-	while (get_time() - start < time)
-		usleep(200);
+	waiter_sem = ft_strjoin("philo", ft_itoa(philo->id));
+	if (!waiter_sem)
+		return (printf("Malloc failed!\n"), exit(2), 0);
+	sem_unlink(waiter_sem);
+	philo->simulation->child_sem = sem_open(waiter_sem, O_CREAT | O_EXCL, \
+		0644, 1);
+	free(waiter_sem);
+	if (philo->simulation->child_sem == SEM_FAILED)
+		return (printf("Semaphore initialization failed!\n"), exit(2), 0);
+	return (1);
 }
