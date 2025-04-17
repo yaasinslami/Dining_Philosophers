@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 16:53:40 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/17 13:34:21 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/17 16:16:29 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@ static int	child_philo(t_philo *philo);
 
 int	start_simulation(t_program *simulation)
 {
+	simulation->info = 0;
 	if (!initialize_semaphores(simulation))
-		return (printf("Semaphore initialization failed!(start_simulation \
-			function)\n"), 0);
+		return (printf("Semaphore initialization failed!\n"), 0);
 	if (!initialize_philos(simulation))
 		return (printf("Philosophers initialization failed!\n"), 0);
 	return (1);
@@ -46,6 +46,7 @@ static int	initialize_philos(t_program *simulation)
 	simulation->philos = malloc(sizeof(t_philo) * simulation->philos_num);
 	if (!simulation->philos)
 		return (printf("Malloc failed!\n"), 0);
+	simulation->info |= PHILOS;
 	simulation->start_time = get_time();
 	i = -1;
 	while (++i < simulation->philos_num)
@@ -54,7 +55,10 @@ static int	initialize_philos(t_program *simulation)
 		simulation->philos[i].meals_eaten = 0;
 		simulation->philos[i].simulation = simulation;
 		if (!forkeach_philo(&simulation->philos[i]))
+		{
+			kill_forked(simulation, i);
 			return (0);
+		}
 	}
 	wait_philos(simulation);
 	return (1);

@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/30 19:36:42 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/16 12:56:43 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/17 14:29:14 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,12 @@ void	philo_routine(t_philo *philo)
 			break ;
 		pthread_mutex_unlock(&philo->simulation->forks[philo->fork_l]);
 		pthread_mutex_unlock(&philo->simulation->forks[philo->fork_r]);
+		if (check_number_of_eats(philo))
+			break ;
 		print_logs(philo, "is sleeping");
 		if (philo_hang(philo, philo->simulation->time_to_sleep, SLEEP))
 			break ;
 		print_logs(philo, "is thinking");
-		if (check_number_of_eats(philo))
-			break ;
 		usleep(100);
 	}
 }
