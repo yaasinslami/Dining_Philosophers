@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:19:59 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/17 14:27:11 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/20 00:12:46 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 # define FORKS 1
 # define LOG 2
 # define MEAL 4
+# define DIED 8
 
 typedef struct s_philo
 {
@@ -54,6 +55,7 @@ typedef struct s_program
 	pthread_mutex_t		*forks;
 	pthread_mutex_t		log_lock;
 	pthread_mutex_t		meal_lock;
+	pthread_mutex_t		died_lock;
 	int					mut;
 	t_philo				*philos;
 }	t_program;
@@ -63,9 +65,12 @@ int		start_simulation(t_program *simulation);
 void	print_logs(t_philo *philo, char *str);
 void	alone_philo(t_philo *philo);
 void	philo_routine(t_philo *philo);
-void	unlock_mutexes(t_philo *philo, int state);
 int		check_number_of_eats(t_philo *philo);
 void	free_simulation(t_program *simulation);
 time_t	get_time(void);
+void	cleanup_threads(t_program *simulation, int i);
+int		should_stop(t_program *sim);
+void	*monitor_func(void *arg);
+int		starved(t_program *sim);
 
 #endif

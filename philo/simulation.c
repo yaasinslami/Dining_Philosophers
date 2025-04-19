@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/28 15:20:40 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/17 14:33:24 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/20 00:28:45 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@ static void	initialize_philos(t_program *simulation);
 
 int	start_simulation(t_program *simulation)
 {
-	int	i;
+	int			i;
+	pthread_t	monitor;
 
 	if (initialize_simulation(simulation))
 		return (1);
@@ -29,18 +30,18 @@ int	start_simulation(t_program *simulation)
 		simulation->philos[i].last_meal_time = get_time();
 		if (pthread_create(&simulation->philos[i].thread, NULL, \
 			philosopher, &simulation->philos[i]))
-		{
-			while (--i >= 0)
-				pthread_join(simulation->philos[i].thread, NULL);
-			return (printf("Error\nThread creation failed!\n"), 1);
-		}
+			return (cleanup_threads(simulation, i), 1);
 	}
+	if (pthread_create(&monitor, NULL, \
+		monitor_func, simulation) != 0)
+		return (cleanup_threads(simulation, simulation->philos_num), 1);
 	i = -1;
 	while (++i < simulation->philos_num)
 	{
 		if (pthread_join(simulation->philos[i].thread, NULL))
 			return (printf("Error\nThread join failed!\n"), 1);
 	}
+	pthread_join(monitor, NULL);
 	if (simulation->stop_flag == STOP)
 		printf("%ld %d died\n", simulation->death_time, simulation->dead_philo);
 	return (0);
@@ -78,6 +79,7 @@ static void	initialize_philos(t_program *simulation)
 	i = -1;
 	while (++i < simulation->philos_num)
 	{
+		simulation->philos[i].last_meal_time = get_time();
 		simulation->philos[i].id = i + 1;
 		simulation->philos[i].meals_eaten = 0;
 		simulation->philos[i].fork_r = i;
@@ -107,6 +109,9 @@ static int	init_mutex(t_program *simulation)
 	if (pthread_mutex_init(&simulation->meal_lock, NULL))
 		return (printf("Error\nMutex init failed!\n"), 1);
 	simulation->mut |= MEAL;
+	if (pthread_mutex_init(&simulation->died_lock, NULL))
+		return (printf("Error\nMutex init failed!\n"), 1);
+	simulation->mut |= DIED;
 	return (0);
 }
 
@@ -117,8 +122,8 @@ static void	*philosopher(void *data)
 	philo = (t_philo *)data;
 	if (philo->simulation->philos_num == 1)
 		return (alone_philo(philo), NULL);
-	if (philo->id % 2 == 0)
-		usleep(200);
+	if (philo->id % 2)
+		usleep((philo->simulation->time_to_eat / 2) * 1000);
 	philo_routine(philo);
 	return (NULL);
 }
