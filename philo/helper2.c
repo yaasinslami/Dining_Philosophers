@@ -6,70 +6,40 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 20:37:05 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/20 00:14:18 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/20 19:47:39 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	should_stop(t_program *sim)
+void	take_forks(t_philo *philo)
 {
-	int	status;
-
-	status = 0;
-	pthread_mutex_lock(&sim->died_lock);
-	status = sim->stop_flag;
-	pthread_mutex_unlock(&sim->died_lock);
-	return (status == STOP);
-}
-
-void	cleanup_threads(t_program *simulation, int i)
-{
-	while (--i > 0)
-		pthread_join(simulation->philos[i].thread, NULL);
-	printf("Error\nThread creation failed!\n");
-}
-
-int check_death(t_program *sim, t_philo *philo)
-{
-	int	died;
-
-	pthread_mutex_lock(&sim->meal_lock);
-	died = get_time() - philo->last_meal_time > sim->time_to_die;
-	pthread_mutex_unlock(&sim->meal_lock);
-	return (died);
-}
-
-int	starved(t_program *sim)
-{
-	int	i;
-
-	i = -1;
-	while (++i < sim->philos_num)
+	if (philo->id % 2 == 0)
 	{
-		if (check_death(sim, &sim->philos[i]))
-		{
-			pthread_mutex_lock(&sim->died_lock);
-			sim->stop_flag = STOP;
-			sim->dead_philo = sim->philos[i].id;
-			sim->death_time = get_time() - sim->start_time;
-			pthread_mutex_unlock(&sim->died_lock);
-			return (1);
-		}
+		pthread_mutex_lock(&philo->simulation->forks[philo->fork_r]);
+		print_logs(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->simulation->forks[philo->fork_l]);
+		print_logs(philo, "has taken a fork");
 	}
-	return (0);
+	else
+	{
+		pthread_mutex_lock(&philo->simulation->forks[philo->fork_l]);
+		print_logs(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->simulation->forks[philo->fork_r]);
+		print_logs(philo, "has taken a fork");
+	}
 }
 
-void	*monitor_func(void *arg)
+void	putdown_forks(t_philo *philo)
 {
-	t_program	*sim;
-
-	sim = (t_program *)arg;
-	while (1)
+	if (philo->id % 2 == 0)
 	{
-		if (starved(sim))
-			break ;
-		usleep(200);
+		pthread_mutex_unlock(&philo->simulation->forks[philo->fork_l]);
+		pthread_mutex_unlock(&philo->simulation->forks[philo->fork_r]);
 	}
-	return (NULL);
+	else
+	{
+		pthread_mutex_unlock(&philo->simulation->forks[philo->fork_r]);
+		pthread_mutex_unlock(&philo->simulation->forks[philo->fork_l]);
+	}
 }

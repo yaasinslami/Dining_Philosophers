@@ -6,7 +6,15 @@ RM			=	rm -rf
 MD			=	mkdir -p
 
 OBJDIR		= 	obj
-SRCS		= 	philo.c simulation.c helper.c parsing.c simulation_2.c helper2.c
+
+SRCS		=	simulation.c \
+				parsing.c \
+				monitor.c \
+				routine.c \
+				helper2.c \
+				helper.c \
+			 	philo.c \
+
 OBJS		=	$(SRCS:%.c=$(OBJDIR)/%.o)
 
 all: $(NAME)

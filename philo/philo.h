@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:19:59 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/20 00:12:46 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/20 17:46:40 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@
 # include <limits.h>
 
 # define MAX_PHILOS 200
-# define STOP 1
+# define STOP 20
+# define DEAD 1
 # define EAT 2
 # define SLEEP 3
 
@@ -62,15 +63,15 @@ typedef struct s_program
 
 int		parsing(int ac, char **av, t_program *simulation);
 int		start_simulation(t_program *simulation);
+void	*philosopher(void *data);
 void	print_logs(t_philo *philo, char *str);
-void	alone_philo(t_philo *philo);
-void	philo_routine(t_philo *philo);
 int		check_number_of_eats(t_philo *philo);
 void	free_simulation(t_program *simulation);
 time_t	get_time(void);
 void	cleanup_threads(t_program *simulation, int i);
 int		should_stop(t_program *sim);
 void	*monitor_func(void *arg);
-int		starved(t_program *sim);
+void	take_forks(t_philo *philo);
+void	putdown_forks(t_philo *philo);
 
 #endif

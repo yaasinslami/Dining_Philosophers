@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 20:29:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/17 16:16:59 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/20 21:37:32 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 # include <limits.h>
 # include <sys/time.h>
 # include <signal.h>
+# include <fcntl.h>
+# include <sys/wait.h>
 
 # define MAX_PHILOS 200
 # define PHILOS 1
