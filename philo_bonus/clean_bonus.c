@@ -6,22 +6,24 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 11:16:09 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/17 16:16:47 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 16:48:19 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 
-void	kill_forked(t_program *simulation, int last)
+void	cleanup_childsem(t_program *sim)
 {
 	int	i;
 
-	i = 0;
-	while (i < last)
+	i = -1;
+	if (sim->info & PHILOS)
 	{
-		if (simulation->philos[i].philo_pid > 0)
-			kill(simulation->philos[i].philo_pid, SIGKILL);
-		i++;
+		while (++i < sim->philos_num)
+		{
+			sem_close(sim->philos[i].meal_sem);
+			sem_close(sim->philos[i].mealtime_sem);
+		}
 	}
 }
 
@@ -42,37 +44,40 @@ void	wait_philos(t_program *simulation)
 		{
 			exit_code = WEXITSTATUS(status);
 			if (exit_code != 0)
-				kill_world(&simulation);
+				break ;
 		}
+		else if (WIFSIGNALED(status))
+			break ;
 		if (i == simulation->philos_num)
 			i = 0;
 		i++;
 	}
-	kill_world(&simulation);
+	kill_world(simulation);
 }
 
-void	kill_world(t_program **simulation)
+void	kill_world(t_program *simulation)
 {
 	int	i;
 
-	if (!simulation || !*simulation)
+	if (!simulation)
 		return ;
 	i = 0;
-	if ((*simulation)->info & PHILOS)
+	if (simulation->info & PHILOS)
 	{
-		while (i < (*simulation)->philos_num)
+		while (i < simulation->philos_num)
 		{
-			if ((*simulation)->philos[i].philo_pid > 0)
-				kill((*simulation)->philos[i].philo_pid, SIGKILL);
+			if (simulation->philos[i].philo_pid > 0)
+				kill(simulation->philos[i].philo_pid, SIGKILL);
 			i++;
 		}
 	}
 	sem_unlink(FORK_SEM);
 	sem_unlink(LOG_SEM);
-	sem_close((*simulation)->forks);
-	sem_close((*simulation)->log_sem);
-	if ((*simulation)->philos)
-		free((*simulation)->philos);
-	free(*simulation);
+	sem_close(simulation->forks);
+	sem_close(simulation->log_sem);
+	cleanup_childsem(simulation);
+	if (simulation->philos)
+		free(simulation->philos);
+	free(simulation);
 	exit (0);
 }

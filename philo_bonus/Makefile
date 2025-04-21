@@ -1,6 +1,6 @@
 CC 			= 	cc
 NAME		=	philo_bonus
-FLAGS		= 	-Wall -Wextra -Werror
+FLAGS		= 	-Wall -Wextra -Werror -pthread -fsanitize=thread
 HEADER		=	philo_bonus.h
 RM			=	rm -rf
 MD			=	mkdir -p
@@ -10,9 +10,10 @@ SRCS		= 	helper2_bonus.c \
 				helper_bonus.c \
 				parser_bonus.c \
 				philo_bonus.c \
-				simulation2_bonus.c \
+				routine_bonus.c \
 				simulation_bonus.c \
-				clean_bonus.c
+				clean_bonus.c \
+				sem_bonus.c
 
 OBJS		=	$(SRCS:%.c=$(OBJDIR)/%.o)
 

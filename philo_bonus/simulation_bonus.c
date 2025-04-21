@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 16:53:40 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/17 16:16:29 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 16:53:30 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,7 @@ static int	initialize_philos(t_program *simulation)
 		simulation->philos[i].meals_eaten = 0;
 		simulation->philos[i].simulation = simulation;
 		if (!forkeach_philo(&simulation->philos[i]))
-		{
-			kill_forked(simulation, i);
 			return (0);
-		}
 	}
 	wait_philos(simulation);
 	return (1);
@@ -76,12 +73,11 @@ static int	forkeach_philo(t_philo *philo)
 
 static int	child_philo(t_philo *philo)
 {
-	if (!child_sem(philo))
-		return (0);
-	sem_wait(philo->simulation->child_sem);
+	if (!meal_sem(philo))
+		return (exit(2), 0);
+	sem_wait(philo->mealtime_sem);
 	philo->last_meal_time = get_time();
-	philo->next_meal = philo->last_meal_time + philo->simulation->time_to_die;
-	sem_post(philo->simulation->child_sem);
+	sem_post(philo->mealtime_sem);
 	if (pthread_create(&philo->monitor, NULL, monitor, philo))
 		return (printf("Thread creation failed!\n"), exit(2), 0);
 	if (pthread_detach(philo->monitor))
@@ -92,7 +88,8 @@ static int	child_philo(t_philo *philo)
 		eat(philo);
 		if (check_number_of_eats(philo))
 			exit(0);
-		ft_sleep(philo);
+		print_logs(philo, "is sleeping", 0);
+		ft_sleep(philo->simulation->time_to_sleep);
 		print_logs(philo, "is thinking", 0);
 	}
 	return (1);

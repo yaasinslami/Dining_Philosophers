@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 20:29:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/20 21:37:32 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 17:08:35 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,14 @@
 # include <limits.h>
 # include <sys/time.h>
 # include <signal.h>
-# include <fcntl.h>
-# include <sys/wait.h>
 
 # define MAX_PHILOS 200
 # define PHILOS 1
 
 # define FORK_SEM "/fork_sem"
 # define LOG_SEM "/log_sem"
+# define MEAL "/meal"
+# define TIME "/mealtime"
 
 typedef struct s_philo
 {
@@ -37,8 +37,8 @@ typedef struct s_philo
 	int					id;
 	int					meals_eaten;
 	time_t				last_meal_time;
-	time_t				next_meal;
-	sem_t				*meal_check;
+	sem_t				*meal_sem;
+	sem_t				*mealtime_sem;
 	struct s_program	*simulation;
 }	t_philo;
 
@@ -53,7 +53,6 @@ typedef struct s_program
 	time_t				start_time;
 	sem_t				*forks;
 	sem_t				*log_sem;
-	sem_t				*child_sem;
 	t_philo				*philos;
 }	t_program;
 
@@ -62,15 +61,15 @@ int		start_simulation(t_program *simulation);
 void	*monitor(void *arg);
 void	take_forks(t_philo *philo);
 void	eat(t_philo *philo);
-void	ft_sleep(t_philo *philo);
-void	kill_world(t_program **simulation);
+void	kill_world(t_program *simulation);
 void	print_logs(t_philo *philo, char *str, int id);
 time_t	get_time(void);
 int		check_number_of_eats(t_philo *philo);
-int		child_sem(t_philo *philo);
 void	wait_philos(t_program *simulation);
 char	*ft_strjoin(char *s1, char *s2);
 char	*ft_itoa(int num);
-void	kill_forked(t_program *simulation, int last);
+void	ft_sleep(time_t time);
+int		meal_sem(t_philo *philo);
+void	cleanup_childsem(t_program *sim);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/30 19:36:42 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/20 21:21:00 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 12:42:02 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,13 +58,15 @@ static int	philo_hang(t_philo *philo, time_t time)
 
 static int	eat(t_philo *philo)
 {
-	pthread_mutex_lock(&philo->simulation->meal_lock);
+	pthread_mutex_lock(&philo->simulation->mealtime_lock);
 	philo->last_meal_time = get_time();
-	philo->meals_eaten++;
-	pthread_mutex_unlock(&philo->simulation->meal_lock);
+	pthread_mutex_unlock(&philo->simulation->mealtime_lock);
 	print_logs(philo, "is eating");
 	if (!philo_hang(philo, philo->simulation->time_to_eat))
 		return (putdown_forks(philo), 0);
+	pthread_mutex_lock(&philo->simulation->meal_lock);
+	philo->meals_eaten++;
+	pthread_mutex_unlock(&philo->simulation->meal_lock);
 	putdown_forks(philo);
 	if (check_number_of_eats(philo))
 		return (0);

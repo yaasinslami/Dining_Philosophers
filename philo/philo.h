@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:19:59 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/20 17:46:40 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 13:02:13 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,12 @@
 # define MAX_PHILOS 200
 # define STOP 20
 # define DEAD 1
-# define EAT 2
-# define SLEEP 3
 
 # define FORKS 1
 # define LOG 2
 # define MEAL 4
-# define DIED 8
+# define TIME 8
+# define DIED 16
 
 typedef struct s_philo
 {
@@ -56,6 +55,7 @@ typedef struct s_program
 	pthread_mutex_t		*forks;
 	pthread_mutex_t		log_lock;
 	pthread_mutex_t		meal_lock;
+	pthread_mutex_t		mealtime_lock;
 	pthread_mutex_t		died_lock;
 	int					mut;
 	t_philo				*philos;
@@ -73,5 +73,6 @@ int		should_stop(t_program *sim);
 void	*monitor_func(void *arg);
 void	take_forks(t_philo *philo);
 void	putdown_forks(t_philo *philo);
+int		init_forks_mutex(t_program *simulation);
 
 #endif

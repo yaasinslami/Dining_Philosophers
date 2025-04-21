@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:28:18 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/20 17:40:46 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 12:43:55 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ void	free_simulation(t_program *simulation)
 		pthread_mutex_destroy(&simulation->log_lock);
 	if (simulation->mut & MEAL)
 		pthread_mutex_destroy(&simulation->meal_lock);
+	if (simulation->mut & TIME)
+		pthread_mutex_destroy(&simulation->mealtime_lock);
 	if (simulation->mut & DIED)
 		pthread_mutex_destroy(&simulation->died_lock);
 	if (simulation->forks)

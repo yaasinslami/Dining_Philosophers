@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 17:36:19 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/20 20:37:18 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 12:42:47 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,9 +70,9 @@ static int	check_death(t_program *sim, t_philo *philo)
 {
 	int	died;
 
-	pthread_mutex_lock(&sim->meal_lock);
+	pthread_mutex_lock(&sim->mealtime_lock);
 	died = get_time() - philo->last_meal_time > sim->time_to_die;
-	pthread_mutex_unlock(&sim->meal_lock);
+	pthread_mutex_unlock(&sim->mealtime_lock);
 	return (died);
 }
 

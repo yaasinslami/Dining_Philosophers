@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/23 14:59:57 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/17 16:13:50 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 16:32:53 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,28 +24,6 @@ static size_t	ft_strlen(char *s)
 	return (len);
 }
 
-static char	*ft_strdup(char *str)
-{
-	char	*res;
-	int		i;
-	int		j;
-
-	if (!str)
-		return (NULL);
-	j = 0;
-	i = ft_strlen(str);
-	res = (char *)malloc((i + 1) * sizeof(char));
-	if (!res)
-		return (NULL);
-	while (j < i)
-	{
-		res[j] = str[j];
-		j++;
-	}
-	res[j] = '\0';
-	return (res);
-}
-
 char	*ft_strjoin(char *s1, char *s2)
 {
 	char	*res;
@@ -54,13 +32,11 @@ char	*ft_strjoin(char *s1, char *s2)
 
 	i = 0;
 	j = 0;
-	if (!s1 && !s2)
+	if (!s1 || !s2)
 		return (NULL);
-	if (!s2)
-		s2 = ft_strdup("");
 	res = (char *)malloc((ft_strlen(s1) + ft_strlen(s2) + 1) * sizeof(char));
 	if (res == NULL)
-		return (free(s2), NULL);
+		return (NULL);
 	while (s1[i])
 	{
 		res[i] = s1[i];
@@ -69,7 +45,7 @@ char	*ft_strjoin(char *s1, char *s2)
 	while (s2[j])
 		res[i++] = s2[j++];
 	res[i] = '\0';
-	return (free(s2), res);
+	return (res);
 }
 
 time_t	get_time(void)

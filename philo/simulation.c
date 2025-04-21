@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/28 15:20:40 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/20 20:12:10 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 12:52:12 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ int	start_simulation(t_program *simulation)
 		return (1);
 	if (simulation->stop_flag == DEAD)
 		printf("%ld %d died\n", simulation->death_time, simulation->dead_philo);
+	if (simulation->stop_flag == STOP)
+		printf("%ld simulation done!\n", get_time() - simulation->start_time);
 	return (0);
 }
 
@@ -96,25 +98,17 @@ static void	initialize_philos(t_program *simulation)
 
 static int	init_mutex(t_program *simulation)
 {
-	int	i;
-
-	i = -1;
-	while (++i < simulation->philos_num)
-	{
-		if (pthread_mutex_init(&simulation->forks[i], NULL))
-		{
-			while (--i < 0)
-				pthread_mutex_destroy(&simulation->forks[i]);
-			return (printf("Error\nMutex init failed!\n"), 1);
-		}
-	}
-	simulation->mut |= FORKS;
+	if (init_forks_mutex(simulation))
+		return (1);
 	if (pthread_mutex_init(&simulation->log_lock, NULL))
 		return (printf("Error\nMutex init failed!\n"), 1);
 	simulation->mut |= LOG;
 	if (pthread_mutex_init(&simulation->meal_lock, NULL))
 		return (printf("Error\nMutex init failed!\n"), 1);
 	simulation->mut |= MEAL;
+	if (pthread_mutex_init(&simulation->mealtime_lock, NULL))
+		return (printf("Error\nMutex init failed!\n"), 1);
+	simulation->mut |= TIME;
 	if (pthread_mutex_init(&simulation->died_lock, NULL))
 		return (printf("Error\nMutex init failed!\n"), 1);
 	simulation->mut |= DIED;
