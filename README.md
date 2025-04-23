@@ -6,6 +6,8 @@ The full documentation is hosted on GitBook:
 
 👉 [View on GitBook](https://slamis-organization.gitbook.io/yslami/dining-philosophers)
 
+👉 [View on Medium](https://medium.com/@yassinx4002/dining-philosophers-in-c-from-theory-to-practice-28582180aa37)
+
 # Part 1: Multithreading the Dinner – Solving with Threads and Mutexes
 
 Before we jump into the code, let’s talk briefly about **multithreading**. In modern programs, we often want to run multiple operations at the same time — that’s where threads come in. But when threads share resources (like forks in our case), things can get messy: **data races**, **deadlocks**, and **starvation** are real challenges we must handle.
