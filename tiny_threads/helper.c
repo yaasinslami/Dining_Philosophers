@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:28:18 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/21 12:43:55 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 22:30:14 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,7 @@
 
 void	print_logs(t_philo *philo, char *str)
 {
-	int	status;
-
-	pthread_mutex_lock(&philo->simulation->died_lock);
-	status = philo->simulation->stop_flag;
-	pthread_mutex_unlock(&philo->simulation->died_lock);
-	if (status != DEAD && status != STOP)
+	if (!should_stop(philo->simulation))
 	{
 		pthread_mutex_lock(&philo->simulation->log_lock);
 		printf("%ld %d %s\n", get_time() - philo->simulation->start_time, \
@@ -30,14 +25,14 @@ void	print_logs(t_philo *philo, char *str)
 
 int	check_number_of_eats(t_philo *philo)
 {
+	int	meals_eaten;
+
 	pthread_mutex_lock(&philo->simulation->meal_lock);
-	if (philo->simulation->number_of_eats != -1 && \
-		philo->meals_eaten >= philo->simulation->number_of_eats)
-	{
-		pthread_mutex_unlock(&philo->simulation->meal_lock);
-		return (1);
-	}
+	meals_eaten = philo->meals_eaten;
 	pthread_mutex_unlock(&philo->simulation->meal_lock);
+	if (philo->simulation->number_of_eats != -1 && \
+		meals_eaten >= philo->simulation->number_of_eats)
+		return (1);
 	return (0);
 }
 

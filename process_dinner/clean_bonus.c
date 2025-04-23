@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 11:16:09 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/21 16:48:19 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/22 03:03:12 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,32 +27,43 @@ void	cleanup_childsem(t_program *sim)
 	}
 }
 
-void	wait_philos(t_program *simulation)
+static int	handle_status(t_program *sim, int status)
+{
+	int	code;
+
+	if (WIFEXITED(status))
+	{
+		code = WEXITSTATUS(status);
+		if (code != 0)
+		{
+			sem_post(sim->end_sem);
+			return (1);
+		}
+	}
+	else if (WIFSIGNALED(status))
+		return (1);
+	return (0);
+}
+
+void	wait_philos(t_program *sim)
 {
 	int		status;
 	pid_t	pid;
 	int		i;
-	int		exit_code;
 
 	i = 0;
-	while (i < simulation->philos_num)
+	while (i < sim->philos_num)
 	{
 		pid = waitpid(-1, &status, 0);
 		if (pid == -1)
 			break ;
-		if (WIFEXITED(status))
-		{
-			exit_code = WEXITSTATUS(status);
-			if (exit_code != 0)
-				break ;
-		}
-		else if (WIFSIGNALED(status))
+		if (handle_status(sim, status))
 			break ;
-		if (i == simulation->philos_num)
+		if (i == sim->philos_num)
 			i = 0;
 		i++;
 	}
-	kill_world(simulation);
+	kill_world(sim);
 }
 
 void	kill_world(t_program *simulation)
@@ -71,10 +82,10 @@ void	kill_world(t_program *simulation)
 			i++;
 		}
 	}
-	sem_unlink(FORK_SEM);
-	sem_unlink(LOG_SEM);
 	sem_close(simulation->forks);
 	sem_close(simulation->log_sem);
+	sem_close(simulation->done_sem);
+	sem_close(simulation->end_sem);
 	cleanup_childsem(simulation);
 	if (simulation->philos)
 		free(simulation->philos);

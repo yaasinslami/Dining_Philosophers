@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 16:53:40 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/21 16:53:30 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/22 03:05:09 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,10 +31,19 @@ static int	initialize_semaphores(t_program *simulation)
 {
 	sem_unlink(FORK_SEM);
 	sem_unlink(LOG_SEM);
+	sem_unlink(DONE_SEM);
+	sem_unlink(END_SEM);
 	simulation->forks = sem_open(FORK_SEM, O_CREAT | O_EXCL, 0644, \
 		simulation->philos_num);
 	simulation->log_sem = sem_open(LOG_SEM, O_CREAT | O_EXCL, 0644, 1);
-	if (simulation->forks == SEM_FAILED || simulation->log_sem == SEM_FAILED)
+	simulation->done_sem = sem_open(DONE_SEM, O_CREAT | O_EXCL, 0644, 0);
+	simulation->end_sem = sem_open(END_SEM, O_CREAT | O_EXCL, 0644, 0);
+	sem_unlink(FORK_SEM);
+	sem_unlink(LOG_SEM);
+	sem_unlink(DONE_SEM);
+	sem_unlink(END_SEM);
+	if (simulation->forks == SEM_FAILED || simulation->log_sem == SEM_FAILED || \
+		simulation->done_sem == SEM_FAILED)
 		return (0);
 	return (1);
 }
@@ -43,6 +52,7 @@ static int	initialize_philos(t_program *simulation)
 {
 	int	i;
 
+	done_monitor(simulation);
 	simulation->philos = malloc(sizeof(t_philo) * simulation->philos_num);
 	if (!simulation->philos)
 		return (printf("Malloc failed!\n"), 0);
@@ -87,7 +97,7 @@ static int	child_philo(t_philo *philo)
 		take_forks(philo);
 		eat(philo);
 		if (check_number_of_eats(philo))
-			exit(0);
+			sem_post(philo->simulation->done_sem);
 		print_logs(philo, "is sleeping", 0);
 		ft_sleep(philo->simulation->time_to_sleep);
 		print_logs(philo, "is thinking", 0);

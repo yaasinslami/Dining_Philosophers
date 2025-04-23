@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/28 15:20:40 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/21 12:52:12 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 22:19:18 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ int	start_simulation(t_program *simulation)
 	if (simulation->stop_flag == DEAD)
 		printf("%ld %d died\n", simulation->death_time, simulation->dead_philo);
 	if (simulation->stop_flag == STOP)
-		printf("%ld simulation done!\n", get_time() - simulation->start_time);
+		printf("simulation done!\n");
 	return (0);
 }
 

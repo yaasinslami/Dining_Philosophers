@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 20:29:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/21 17:08:35 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/22 02:50:37 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,10 @@
 
 # define FORK_SEM "/fork_sem"
 # define LOG_SEM "/log_sem"
-# define MEAL "/meal"
-# define TIME "/mealtime"
+# define MEAL "/meal_sem"
+# define TIME "/mealtime_sem"
+# define DONE_SEM "/done_sem"
+# define END_SEM "/end_sem"
 
 typedef struct s_philo
 {
@@ -53,6 +55,8 @@ typedef struct s_program
 	time_t				start_time;
 	sem_t				*forks;
 	sem_t				*log_sem;
+	sem_t				*done_sem;
+	sem_t				*end_sem;
 	t_philo				*philos;
 }	t_program;
 
@@ -71,5 +75,6 @@ char	*ft_itoa(int num);
 void	ft_sleep(time_t time);
 int		meal_sem(t_philo *philo);
 void	cleanup_childsem(t_program *sim);
+void	done_monitor(t_program *sim);
 
 #endif

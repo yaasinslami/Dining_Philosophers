@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/20 17:36:19 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/21 12:42:47 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 20:30:49 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void	*monitor_func(void *arg)
 	{
 		if (starved(sim) || eat_done(sim))
 			break ;
-		usleep(500);
+		usleep(200);
 	}
 	return (NULL);
 }

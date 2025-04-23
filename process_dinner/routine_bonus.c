@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/25 09:53:28 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/21 16:31:49 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/21 23:09:22 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ void	*monitor(void *arg)
 			print_logs(philo, "died", 1);
 			exit(1);
 		}
+		usleep(1000);
 	}
 	return (NULL);
 }
@@ -65,7 +66,7 @@ int	check_number_of_eats(t_philo *philo)
 	meals_eaten = philo->meals_eaten;
 	sem_post(philo->meal_sem);
 	if (philo->simulation->number_of_eats != -1 && \
-		meals_eaten >= philo->simulation->number_of_eats)
+		meals_eaten == philo->simulation->number_of_eats)
 		return (1);
 	return (0);
 }
