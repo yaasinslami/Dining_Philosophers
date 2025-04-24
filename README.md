@@ -199,3 +199,281 @@ To wrap things up properly, I finish by calling free_simulation, which is my cus
 
 
 To ensure robust cleanup, I use a bitmask (**simulation->mut**) to track the initialization status of each mutex. That way, if an error occurs midway through setup — for example, I succeed in initializing Mutex A and B, but Mutex C fails — I can confidently destroy only A and B, avoiding undefined behavior or double-free errors. This kind of design makes my resource management safe, modular, and error-resilient.
+
+# Part 2: Forking the Table — Philosophers as Processes
+
+In this version of the problem, each philosopher is no longer just a thread — they are now independent processes, each with their own memory space. This shift fundamentally changes how we manage communication and synchronization.
+
+Unlike threads, which naturally share memory, processes are isolated from one another. That means we can’t simply use shared variables or mutexes anymore — instead, we must rely on Inter-Process Communication (IPC) mechanisms such as semaphores, shared memory, or pipes to coordinate their actions.
+
+This design brings both benefits and challenges:
+
+- **Improved fault isolation:** if a philosopher crashes, it won’t corrupt the memory of the others.
+- **More complex synchronization:** since memory isn’t shared, we have to explicitly set up communication channels.
+
+The core goals remain the same — prevent data corruption, ensure fairness, avoid deadlocks and starvation — but the tools and approach are now different.
+
+In the following sections, I’ll walk you through how I structured this version: from process creation and monitoring, to using named semaphores to safely manage forks and state updates.
+
+When we move from threads to processes, the rules of the game change. Let’s explore the essential building blocks that make this work:
+
+### 🧵 Processes vs Threads
+
+- First thing you need to know to understand the difference between a process and a thread, is a fact, that ***processes do not run, threads do***.
+- So, what is a thread? Closest I can get explaining it is an execution state, as in: a combination of CPU registers, stack, the lot. You can see a proof of that, by breaking in a debugger at any given moment. What do you see? A call stack, a set of registers. That’s pretty much it. That’s the thread.
+- Now, then, what is a process. Well, it’s a like an abstract “container” entity for running threads. As far as OS is concerned in a first approximation, it’s an entity OS allocates some VM to, assigns some system resources to (like file handles, network sockets), &c.
+- How do they work together? The OS creates a “process” by reserving some resources to it, and starting a “main” thread. That thread then can spawn more threads. Those are the threads in one process. They more or less can share those resources one way or another (say, locking might be needed for them not to spoil the fun for others &c). From there on, OS is normally responsible for maintaining those threads “inside” that VM (detecting and preventing attempts to access memory which doesn’t “belong” to that process), providing some type of scheduling those threads, so that they can run “one-after-another-and-not-just-one-all-the-time”.
+- In this project, each **philosopher becomes its own process**, meaning they can’t just access shared variables or mutexes — they need special tools to talk to each other and coordinate.
+---
+
+### 📡 Inter-Process Communication (IPC)
+
+Since processes are isolated, we need ways to allow them to communicate and synchronize. This is where IPC (Inter-Process Communication) comes in.
+
+Inter process communication is a mechanism which allows different processes to communicate and synchronize shared actions by using message passing and shared memory.
+
+Inter process communication can be achieved by
+
+1. Shared memory using standard system functions like shmget(), shmat(), etc.
+2. fifo (named pipe)
+3. pipe (unnamed pipe)
+
+It is very important to synchronize shared data items and processes in communication to avoid problems like deadlock, starvation, etc.
+
+anyway , I use semaphores to manage shared resources like forks and logs.
+
+---
+
+### 🚦 Semaphores
+
+A **semaphore** is a special counter used to control access to a shared resource. Think of it like a traffic light:
+
+Think of semaphores as bouncers at a nightclub. There are a dedicated number of people that are allowed in the club at once. If the club is full no one is allowed to enter, but as soon as one person leaves another person might enter.
+
+It’s simply a way to limit the number of consumers for a specific resource. For example, to limit the number of simultaneous calls to a database in an application.
+
+Here is a very pedagogic example in C:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define MAX_GUESTS 50
+#define CLUB_CAPACITY 3
+
+sem_t bouncer;
+
+void* guest(void* arg)
+{
+    int id = *(int*)arg;
+
+    printf("Guest %d is waiting to enter the nightclub.\n", id);
+    sem_wait(&bouncer); // Wait to enter (acquire semaphore)
+
+    printf("Guest %d is doing some dancing 🕺.\n", id);
+    usleep(500000); // Sleep 0.5 sec to simulate dancing
+
+    printf("Guest %d is leaving the nightclub.\n", id);
+    sem_post(&bouncer); // Release (leave club)
+
+    free(arg);
+    return NULL;
+}
+
+int main()
+{
+    pthread_t threads[MAX_GUESTS];
+    sem_init(&bouncer, 0, CLUB_CAPACITY); // Init with 3 available slots
+
+    for (int i = 0; i < MAX_GUESTS; i++) {
+        int* id = malloc(sizeof(int));
+        *id = i + 1;
+
+        if (pthread_create(&threads[i], NULL, guest, id) != 0) {
+            perror("Failed to create thread");
+            free(id);
+        }
+    }
+
+    for (int i = 0; i < MAX_GUESTS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    sem_destroy(&bouncer);
+    return 0;
+}
+```
+
+### 🚪 Stepping into the Implementation — How the Philosophers Eat, Safely
+
+Now that we’ve covered the concepts, it’s time to see them in action.
+
+In this version of the project, **each philosopher is represented by a separate process.** That means they don’t share memory the way threads do — so to coordinate access to shared resources (like forks or logs), we use inter-process communication, specifically **named semaphores.**
+
+Here’s the big idea:
+
+- 🪑 We create a semaphore called /forks, initialized to the number of philosophers.
+This semaphore represents the total number of available forks on the table.
+
+- When a philosopher wants to eat, they wait (sem_wait) twice on the /forks semaphore — once for each fork. This is like saying: “I won’t eat until I’m sure I can grab two forks safely.”
+
+- 🍽️ After eating, the philosopher posts (sem_post) twice, releasing the two forks back to the table so another philosopher can use them.
+
+- 🧾 To prevent messy console logs (from multiple processes printing at once), we use a /log_sem semaphore. A philosopher must acquire it before printing and release it afterward.
+
+This simple but powerful strategy ensures:
+
+- No two philosophers grab the same fork at the same time.
+- Output is clean and readable.
+- And, combined with a monitoring mechanism, we can detect when someone has starved or when all have eaten enough.
+
+Before the simulation starts, I set up all the semaphores that will coordinate the philosophers (processes). This is done in **initialize_semaphores.**
+
+Let me walk you through what each semaphore does and why it matters:
+
+#### 🥢 FORK_SEM
+- This semaphore represents the total number of forks on the table.
+- It’s initialized to the number of philosophers (since there’s one fork per philosopher).
+- Each philosopher needs to successfully wait (decrement) twice on it to simulate taking two forks before eating, and post (increment) twice after eating to release them.
+
+#### 🧾 LOG_SEM
+- Shared output from multiple processes can get messy.
+- So I use this semaphore as a mutex for printing logs.
+- Only one process can acquire it at a time, ensuring clean and readable console output.
+
+#### DONE_SEM
+- This one is a little more interesting. It’s used to track progress toward the meal goal.
+- If the number_of_eats argument is specified, then each philosopher will post to DONE_SEM once they've finished eating enough times.
+- Another process (the monitor or parent) can then wait on this semaphore as many times as there are philosophers, to know when the simulation can stop.
+
+#### END_SEM
+- This semaphore acts as a global stop signal.
+- Once the simulation needs to terminate — either because someone died or everyone is done — the controller process posts to this semaphore.
+- Each philosopher periodically checks END_SEM and exits cleanly when it's signaled.
+
+>
+> Note: I always sem_unlink semaphores before and after opening them. This ensures that any remnants from previous runs don’t interfere with the current one.
+>
+
+With all four semaphores correctly initialized, we now have a robust communication and synchronization backbone for our philosopher processes.
+
+Next, we’ll see how the processes are created and how each philosopher uses these semaphores during the simulation.
+
+---
+
+![](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*gmJJ88vQMZuDv_2mpaF3zw.png)
+
+![](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*Ypxj5Q5tXry9nxnjqcPswg.png)
+
+Each philosopher is a **separate process** forked from the main program. The synchronization and logic are handled via:
+
+- **Named semaphores** for inter-process communication.
+- **Threads** inside each philosopher process to monitor their own state (death detection).
+- **Global simulation control** using semaphores like done_sem and end_sem.
+-
+i use done_monitor() to create the supervisor monitor thread (in main_thread), and detach it to run independently.
+
+![](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*s6yXV2cMiGdSHVHNYfcL0Q.png)
+
+so as i say , he monitor the meal_eaten by using a done_sem semaphore by waiting for all philosophers (waiting to each philo post that semaphore when he eat at least number_of_eats), when i passed that while so im sure that each philo eat at least that numbers of eats, i wait the log_sem to prevent any process from printing actions after that, i annonce the simulation done msg and post the end_sem semaphore to indicate the end of my simulation.
+
+- you may asking, what if before the simulation_done by eating all meals philos need, a philo is died , the simulation will hang waiting for the semaphores to be posted . So here where the exit_thread come:
+
+![](https://miro.medium.com/v2/resize:fit:1212/format:webp/1*-D0xG1yUuRyAq5n5u4PAPA.png)
+
+- when a philo is died, on other wait_philos() function , i catch that exit from that philo and post the end_sem semaphore then i call kill_world() to finish the program, and that’s why i use all this stuff.
+
+Let’s move on to the next.
+
+now i fork for each philo and calling child_philo() function that control the life of each one:
+
+![](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*TTPGRBb2a8YwsVDKV1Ei7A.png)
+
+i use meal_sem() that create two semaphores for each process:
+
+- philo->meal_sem : which protege the meal eaten count for each philo
+- philo->mealtime_sem: which protege the last_meal_time as we see in the first part.
+
+![](https://miro.medium.com/v2/resize:fit:1032/format:webp/1*1Q0L-VSEZOsPknLa9N5dSg.png)
+
+this is the semaphores opened by the process 1, so processes has their own meal and mealtime semaphores.
+
+same concept of part1, the eating, update last_meal_time and meals_eaten with safe protection by meal_semx and mealtime_semx
+
+- after eating:
+
+![](https://miro.medium.com/v2/resize:fit:1276/format:webp/1*uQOnjtGYC_dnO8cZykck-Q.png)
+
+- i check if the philo achieved the number of meals should eaten, if true;
+- i post the done_sem to noticed the supervisor thread as i show you previously.
+
+let’s back to the process’s monitor thread:
+
+![](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*wBxsDgzFkOTkHlnWL-zBsw.png)
+
+- if the monitor detect death of a philo, i print a death msg and exit(1).
+- that exited value will be catched by wait_philos():
+
+![](https://miro.medium.com/v2/resize:fit:1196/format:webp/1*aPsf_Cy2NTx26n2FjsZdxg.png)
+
+in the parent process, after all philosophers are forked:
+
+- The parent calls wait_philos(sim);
+- This function **waits for any child process** to finish using waitpid(-1, &status, 0); here i pass -1 instead of the pid of each philo, to include all processes that have the same GID of the parent process
+- Each time a child terminates, `handle_status` is called to **check how the child exited.**
+
+![](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*IZt5wzqPbalDckxuDyAL_A.png)
+
+- The parent monitors philosopher death or abnormal exit using two checks:
+- Checks if the philosopher exited normally:
+- If exit code is 1, the philosopher died (e.g., from starvation).
+- Signals that the simulation should end by posting on end_sem.
+- Checks if the philosopher exited in abnormal way:
+- This means the child was killed by a signal (e.g., SIGKILL, SIGTERM, etc.).
+- so return 1 to kill_world
+in summurized way:
+- If any of the above checks return true.
+
+1. handle_status returns 1.
+2. wait_philos breaks the waiting loop.
+3. kill_world(sim); is called to:
+- Kill all remaining philosopher processes.
+- Clean up shared semaphores and memory.
+
+```
+┬───────────────
+| Parent forks  │
+│ philosophers  │
+└─────┬─────────┘
+      │
+      ▼
+┌──────────────────────────────────┐
+│ Parent calls wait_philos(sim)   │
+└─────┬────────────────────────────┘
+      │
+      ▼
+┌──────────────────────────────────┐
+│ waitpid waits for any child     │
+│ to exit (loop)                  │
+└─────┬────────────────────────────┘
+      ▼
+┌────────────────────────────┐
+│ handle_status is called    │
+│                            │
+│ if (exit code != 0) or     │
+│    (killed by signal)      │
+└─────┬──────────────────────┘
+      ▼
+┌────────────────────────────┐
+│ post(end_sem)              │
+│ return 1 → break loop      │
+└─────┬──────────────────────┘
+      ▼
+┌────────────────────────────┐
+│ kill_world(sim);           │
+│ cleanup + kill all philos  │
+└────────────────────────────┘
+```
