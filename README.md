@@ -2,9 +2,7 @@
 
 # 📘 Documentation
 
-The full documentation is hosted on GitBook:
-
-👉 [View on GitBook](https://slamis-organization.gitbook.io/yslami/dining-philosophers)
+The full documentation is posted in Medium:
 
 👉 [View on Medium](https://medium.com/@yassinx4002/dining-philosophers-in-c-from-theory-to-practice-28582180aa37)
 

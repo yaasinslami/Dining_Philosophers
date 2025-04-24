@@ -6,7 +6,7 @@
 /*   By: yslami <yslami@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 11:16:09 by yslami            #+#    #+#             */
-/*   Updated: 2025/04/22 03:03:12 by yslami           ###   ########.fr       */
+/*   Updated: 2025/04/24 02:05:16 by yslami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,19 +49,15 @@ void	wait_philos(t_program *sim)
 {
 	int		status;
 	pid_t	pid;
-	int		i;
 
-	i = 0;
-	while (i < sim->philos_num)
+	while (1)
 	{
 		pid = waitpid(-1, &status, 0);
 		if (pid == -1)
 			break ;
 		if (handle_status(sim, status))
 			break ;
-		if (i == sim->philos_num)
-			i = 0;
-		i++;
+		usleep(1000);
 	}
 	kill_world(sim);
 }
